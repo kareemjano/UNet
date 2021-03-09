@@ -59,7 +59,7 @@ def run(parser):
     if train_model:
         print('Starting Training...')
         print('run \'tensorboard --logdir=runs\' to open tensorboard')
-        trainer.train(n_epochs=n_epochs, val_epoch=val_epoch, logs_dir='AEModel')
+        trainer.train(n_epochs=n_epochs, val_epoch=val_epoch, logs_dir='UNetModel')
 
 
 def get_parser():
