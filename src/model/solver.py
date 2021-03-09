@@ -141,8 +141,6 @@ class Trainer:
                 'model_state_dict': self.model.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'criterion_state_dict': self.criterion.state_dict(),
-                'target_center': self.target_center,
-                'target_size': self.target_size,
             }, path)
             print('Checkpoint saved. ', path)
 
@@ -156,6 +154,4 @@ class Trainer:
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.criterion.load_state_dict(checkpoint['criterion_state_dict'])
             self.epoch = checkpoint['epoch']
-            self.target_center = checkpoint['target_center']
-            self.target_size = checkpoint['target_size']
             print('Checkpoint loaded. ', path)
