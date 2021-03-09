@@ -62,8 +62,8 @@ class Trainer:
 
         epoch_loss = running_loss / len(dataloader)
         log_name = 'Training' if not validate else 'Validate'
-        _, in_images, _ = next(iter(dataloader))
-        output_imgs, _ = self.inference(loader=dataloader)
+        in_images, _ = next(iter(dataloader))
+        output_imgs = self.inference(loader=dataloader)
 
         if self.writer:
             # log scaler to Tensorboard
