@@ -9,7 +9,7 @@ from dataset.customDataset import CustomDataset, CustomDataloader
 from model.networks import UNet
 from model.solver import Trainer
 import multiprocessing as mp
-
+import torch
 
 def run(parser):
     batch_size = parser.batch_size
@@ -51,6 +51,7 @@ def run(parser):
     optimizer = Adam(unet_model.parameters(), **optim_hparams)
 
     trainer = Trainer(unet_model, dataloader.train_dataloader(), dataloader.val_dataloader(), optimizer,
+                      cuda=torch.cuda.is_available(),
                       batch_size=batch_size,
                       checkpoint_dir=checkpoint_dir, patience=patience)
     train_model = True
