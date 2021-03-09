@@ -11,12 +11,16 @@ class ConvRelu(nn.Module):
             activ_fn(),
         )
 
+        def weights_init(m):
+            if type(m) == nn.Conv2d:
+                nn.init.xavier_normal_(m.weight, gain=2.0)
+
+        self.model.apply(weights_init)
+
     def forward(self, x):
         return self.model(x)
 
-    def weights_init(m):
-        if type(m) == nn.Conv2d:
-            nn.init.xavier_normal_(m.weight, gain=2.0)
+
 
 class StackedConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding, activ_fn=nn.ReLU):
