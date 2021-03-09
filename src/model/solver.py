@@ -3,7 +3,6 @@ import torch
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import os
-from utils.visualization_utils import visualize_torch
 
 class Trainer:
     def __init__(self, model, train_loader, valid_loader, optimizer, cuda=False, batch_size=32,
@@ -62,16 +61,10 @@ class Trainer:
 
         epoch_loss = running_loss / len(dataloader)
         log_name = 'Training' if not validate else 'Validate'
-        in_images, target = next(iter(dataloader))
-        pred = self.inference(loader=dataloader).cpu()
-        pred_bg = np.array((pred == 0) * 255).astype(np.uint8)
 
         if self.writer:
             # log scaler to Tensorboard
             self.writer.add_scalar(f'{log_name} loss', epoch_loss, epoch)
-            # log images to Tensorboard
-            self.writer.add_figure(log_name, visualize_torch(pred_bg), global_step=epoch)
-            self.writer.add_figure(log_name, visualize_torch(target), global_step=epoch)
 
         if validate:
             if self.patience > 0:
