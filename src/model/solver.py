@@ -6,7 +6,7 @@ import os
 
 class Trainer:
     def __init__(self, model, train_loader, valid_loader, optimizer, cuda=False, batch_size=32,
-                 patience=5, checkpoint_dir=None):
+                 patience=5, checkpoint_dir=None, scheduler=None):
         print("Cuda is available") if cuda else print("Cuda is not avaliable")
 
         self.model = model.to('cuda') if cuda else model
@@ -18,6 +18,7 @@ class Trainer:
         self.valid_loader = valid_loader
         self.patience = patience
         self.checkpoint_dir = checkpoint_dir
+        self.scheduler = scheduler
 
         self.epoch = 0
         self.writer = None
@@ -88,7 +89,7 @@ class Trainer:
 
     def train(self, n_epochs, logs_dir="", val_epoch=1):
         self.bad_epoch = 0
-        total_loss= 0
+        total_loss = 0
         count = 0
 
         while os.path.exists('runs') and logs_dir in os.listdir('runs'):
@@ -102,6 +103,9 @@ class Trainer:
             total_loss += loss
             if (epoch+1) % val_epoch == 0:
                 self.evaluate_epoch()
+
+            if self.scheduler is not None:
+                self.scheduler.step()
 
             if self.bad_epoch == self.patience:
                 print("Patience reached.")
@@ -140,6 +144,7 @@ class Trainer:
                 'epoch': self.epoch+1,
                 'model_state_dict': self.model.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
+                'scheduler_state_dict': self.scheduler.state_dict(),
                 'criterion_state_dict': self.criterion.state_dict(),
             }, path)
             print('Checkpoint saved. ', path)
@@ -153,5 +158,6 @@ class Trainer:
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.criterion.load_state_dict(checkpoint['criterion_state_dict'])
+            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
             self.epoch = checkpoint['epoch']
             print('Checkpoint loaded. ', path)

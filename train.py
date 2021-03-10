@@ -8,6 +8,7 @@ import argparse
 
 import multiprocessing as mp
 from torch.optim import Adam
+from torch.optim.lr_scheduler import StepLR
 from dataset.customDataset import CustomDataset, CustomDataloader
 from model.networks import UNet
 from model.solver import Trainer
@@ -20,6 +21,8 @@ def run(parser):
     val_epoch = parser.val_epoch
     lr = parser.learning_rate
     weight_decay = parser.reg
+    step_size = parser.step_size
+    gamma = parser.gamma
 
     print('Preparing Dataset')
     models_dir = os.path.join('data', 'models')
@@ -47,15 +50,19 @@ def run(parser):
         "lr": lr,
         "weight_decay": weight_decay,
     }
-
+    scheduler_params = {
+        "step_size": step_size,
+        "gamma": gamma,
+    }
     n_classes = 21
     unet_model = UNet(n_classes)
     optimizer = Adam(unet_model.parameters(), **optim_hparams)
+    scheduler = StepLR(optimizer, **scheduler_params)
 
     trainer = Trainer(unet_model, dataloader.train_dataloader(), dataloader.val_dataloader(), optimizer,
                       cuda=torch.cuda.is_available(),
                       batch_size=batch_size,
-                      checkpoint_dir=checkpoint_dir, patience=patience)
+                      checkpoint_dir=checkpoint_dir, patience=patience, scheduler=scheduler)
     train_model = True
 
     if train_model:
@@ -72,12 +79,14 @@ def get_parser():
         add_help=True
     )
 
-    parser.add_argument('-e', '--n_epochs', type=int, default=100, help='Number of epochs')
-    parser.add_argument('-v', '--val_epoch', type=int, default=1, help='Frequency of running validation epoch')
+    parser.add_argument('-e', '--n_epochs', type=int, default=100, help='number of epochs')
+    parser.add_argument('-v', '--val_epoch', type=int, default=1, help='frequency of running validation epoch')
     parser.add_argument('-p', '--patience', type=int, default=5, help='patience to auto-stop training')
-    parser.add_argument('-b', '--batch_size', type=int, default=32, help='Batch size')
-    parser.add_argument('-lr', '--learning_rate', type=float, default=0.0001, help='Training rate')
+    parser.add_argument('-b', '--batch_size', type=int, default=32, help='batch size')
+    parser.add_argument('-lr', '--learning_rate', type=float, default=0.0001, help='training rate')
     parser.add_argument('-r', '--reg', type=float, default=1e-5, help='L2 regularization')
+    parser.add_argument('-s', '--step_size', type=int, default=10, help='step size of the lr scheduler')
+    parser.add_argument('-g', '--gamma', type=float, default=0.5, help='gamma of the lr scheduler')
 
     return parser
 
