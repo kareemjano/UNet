@@ -10,7 +10,7 @@ pip install -r requirements
 ```
 python download_dataset.py
 ```
-### run training
+### Run training
 ```
 python train.py
 ```
@@ -22,6 +22,13 @@ for list of flags:
 ```
 python train.py -h
 ```
+### Tensorboard
+```
+tensorboard --logdir=runs
+```
+### Model checkpoint
+The best checkpoint is automatically saved in data/models/UNet
+
 ## Current Results
 ![training loss](figures/train_loss.jpg)
 
