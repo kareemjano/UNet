@@ -22,6 +22,11 @@ for list of flags:
 ```
 python train.py -h
 ```
+## Current Results
+![training loss](figures/train_loss.jpg)
+
+
+![validation loss](figures/valid.jpg)
 
 ## Citation
 @misc{pascal-voc-2012,
