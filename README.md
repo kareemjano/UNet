@@ -29,6 +29,9 @@ tensorboard --logdir=runs
 ### Model checkpoint
 The best checkpoint is automatically saved in data/models/UNet
 
+### GPU
+Automaticly detects GPU and uses it.
+
 ## Current Results
 ![training loss](figures/train_loss.jpg)
 
