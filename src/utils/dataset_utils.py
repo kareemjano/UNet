@@ -2,7 +2,6 @@ import urllib.request
 import os
 from tqdm import tqdm
 import tarfile
-import glob
 
 class DownloadProgressBar(tqdm):
     def update_to(self, b=1, bsize=1, tsize=None):

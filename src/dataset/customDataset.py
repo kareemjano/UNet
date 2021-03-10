@@ -11,10 +11,7 @@ class CustomDataloader():
         """
         :param dataset: LfwImagesDataset(), if manual_split==True than this is the LfwImagesPairsDataset train set
         :param batch_size: default value: 32
-        :param splitting_points: splitting point fraction for test and validation.
-                                default (0.11, 0.11) -> 78% train, 11% validation, 11% test
         :param num_workers: if manual_split==True this must be the validation LfwImagesPairsDataset
-        :param shuffle: (bool) shuffle the valid dataset
         :param input_size: (int) size of the input image. assuming width and height are the same
         """
         super().__init__()
@@ -64,7 +61,14 @@ class CustomDataloader():
 class CustomDataset(Dataset):
     # define the constructor of this dataset object
     def __init__(self, dataset_folder, labels_map_path, my_transform=None, input_size=572, output_size=388):
-
+        """
+        Create VOC 2012 pytorch Dataset
+        :param dataset_folder: main VOC 2012 directory
+        :param labels_map_path: path to labels_map txt file
+        :param my_transform: pytorch transforms to be applied
+        :param input_size: input size of the model
+        :param output_size: output size of the model
+        """
         self.base = os.path.join(dataset_folder, 'VOCdevkit', 'VOC2009')
         self.images_dir = os.path.join(self.base, 'JPEGImages')
         self.segs_dir = os.path.join(self.base, 'SegmentationClass')

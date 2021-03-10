@@ -3,13 +3,15 @@ import sys
 sys.path.append('src')
 
 import os
-from torch.optim import Adam
+import torch
 import argparse
+
+import multiprocessing as mp
+from torch.optim import Adam
 from dataset.customDataset import CustomDataset, CustomDataloader
 from model.networks import UNet
 from model.solver import Trainer
-import multiprocessing as mp
-import torch
+
 
 def run(parser):
     batch_size = parser.batch_size
