@@ -60,7 +60,7 @@ class Trainer:
                     loss.backward()
                     self.optimizer.step()
 
-                running_loss += loss.detach().item()
+                running_loss += loss.detach().cpu().item()
 
                 if not validate:
                     desc = f'Epoch Train {epoch} - loss {running_loss / (i + 1):.4f}'
