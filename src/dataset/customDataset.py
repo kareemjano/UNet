@@ -4,6 +4,7 @@ from PIL import Image
 import torch
 from torchvision import transforms
 import numpy as np
+from utils.dataset_utils import read_image
 
 class CustomDataloader():
 
@@ -79,6 +80,7 @@ class CustomDataset(Dataset):
         with open(labels_map_path) as f:
             label_map = f.readlines()
 
+        label_map = label_map[:int(len(label_map)/4)]
         self.labels_map = [x.strip() for x in label_map]
 
     def __len__(self):
@@ -88,13 +90,9 @@ class CustomDataset(Dataset):
         img_path = os.path.join(self.images_dir, self.labels_map[idx] + ".jpg")
         seg_path = os.path.join(self.segs_dir, self.labels_map[idx] + ".png")
 
-        image = np.array(Image.open(img_path).resize((self.input_size, self.input_size))) / 255
-        image = np.transpose(image, [2, 0, 1])
+        image = read_image(img_path, size=self.input_size, transform=self.transform)
 
         seg = Image.open(seg_path).resize((self.output_size, self.output_size))
         seg = np.array(seg).astype(dtype=np.uint8)
-
-        if self.transform:
-            image = self.transform(image)
 
         return image, torch.tensor(seg)

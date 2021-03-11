@@ -1,5 +1,4 @@
 import sys
-
 sys.path.append('src')
 
 import os
@@ -42,8 +41,8 @@ def run(parser):
     dataset_txt = [train_txt, val_txt, test_txt]
     datasets = [CustomDataset(base, txt) for txt in dataset_txt]
 
-    dataloader = CustomDataloader(datasets, batch_size=batch_size, num_workers=mp.cpu_count())
-    dataloader.setup()
+    dataloaders = CustomDataloader(datasets, batch_size=batch_size, num_workers=mp.cpu_count())
+    dataloaders.setup()
 
     # train
     optim_hparams = {
@@ -59,23 +58,21 @@ def run(parser):
     optimizer = Adam(unet_model.parameters(), **optim_hparams)
     scheduler = StepLR(optimizer, **scheduler_params)
 
-    trainer = Trainer(unet_model, dataloader.train_dataloader(), dataloader.val_dataloader(), optimizer,
+    trainer = Trainer(unet_model, dataloaders, optimizer,
                       cuda=torch.cuda.is_available(),
                       batch_size=batch_size,
                       checkpoint_dir=checkpoint_dir, patience=patience, scheduler=scheduler)
-    train_model = True
 
-    if train_model:
-        print('Starting Training...')
-        print('run \'tensorboard --logdir=runs\' to open tensorboard')
-        trainer.train(n_epochs=n_epochs, val_epoch=val_epoch, logs_dir='UNetModel')
+    print('Starting Training...')
+    print('run \'tensorboard --logdir=runs\' to open tensorboard')
+    trainer.train(n_epochs=n_epochs, val_epoch=val_epoch, logs_dir='UNetModel')
 
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        prog='Image segmentation using U-Net',
-        usage='python main.py',
-        description='This module demonstrates image segmentation using U-Net.',
+        prog='Train semantic segmentation using UNet on VOC 2012 dataset',
+        usage='python train.py',
+        description='This module trains, evaluates, and tests semantic segmentation model using U-Net on VOC 2012 dataset',
         add_help=True
     )
 

@@ -7,6 +7,7 @@ class ConvRelu(nn.Module):
 
         self.model = nn.Sequential(
             nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, padding=padding),
+            nn.BatchNorm2d(out_channels),
             activ_fn(),
         )
 
@@ -46,7 +47,7 @@ class EncoderBlock(nn.Module):
         return x_down, x
 
 class DecoderBlock(nn.Module):
-    def __init__(self, input_channels, f_channels, f, padding, activ_fn=nn.PReLU):
+    def __init__(self, input_channels, f_channels, f, padding, activ_fn=nn.ReLU):
         super().__init__()
 
         self.up = nn.ConvTranspose2d(input_channels, f_channels, kernel_size=2, padding=0, stride=2)
@@ -78,6 +79,8 @@ class UNet(nn.Module):
         f = 3
         padding = 0
 
+        self.input_size = 572
+        self.output_size = 388
         # encoder
         self.encoder1 = EncoderBlock(input_channels, f_channels, f, padding, activ_fn=activ_fn)
         self.encoder2 = EncoderBlock(f_channels, f_channels * 2, f, padding, activ_fn=activ_fn)

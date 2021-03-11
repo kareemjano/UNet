@@ -2,6 +2,8 @@ import urllib.request
 import os
 from tqdm import tqdm
 import tarfile
+import numpy as np
+from PIL import Image
 
 class DownloadProgressBar(tqdm):
     def update_to(self, b=1, bsize=1, tsize=None):
@@ -52,6 +54,10 @@ def get_dataset(dataset_url):
 
     return target_dir
 
-
-
+def read_image(img_path, size, transform=None):
+    image = np.array(Image.open(img_path).resize((size, size))) / 255
+    image = np.transpose(image, [2, 0, 1])
+    if transform:
+        image = transform(image)
+    return image
 

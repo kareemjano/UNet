@@ -1,11 +1,15 @@
 from tqdm import tqdm
 import torch
+import torch.nn.functional as F
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import os
 
+from utils.visualization_utils import visualize_torch
+
+
 class Trainer:
-    def __init__(self, model, train_loader, valid_loader, optimizer, cuda=False, batch_size=32,
+    def __init__(self, model, dataloaders=None, optimizer=None, cuda=False, batch_size=32,
                  patience=5, checkpoint_dir=None, scheduler=None):
         print("Cuda is available") if cuda else print("Cuda is not avaliable")
 
@@ -14,8 +18,11 @@ class Trainer:
         self.criterion = torch.nn.CrossEntropyLoss(ignore_index=255)
         self.batch_size = batch_size
         self.cuda = cuda
-        self.train_loader = train_loader
-        self.valid_loader = valid_loader
+        self.loader = {
+            'train': dataloaders.train_dataloader(),
+            'valid': dataloaders.val_dataloader(),
+            'test': dataloaders.test_dataloader(),
+        } if dataloaders is not None else None
         self.patience = patience
         self.checkpoint_dir = checkpoint_dir
         self.scheduler = scheduler
@@ -25,8 +32,10 @@ class Trainer:
         self.bad_epoch = 0
         self.min_loss = np.inf
 
-    def train_epoch(self, validate=False):
-        dataloader = self.train_loader if not validate else self.valid_loader
+    def train_epoch(self, mode='train'):
+        dataloader = self.loader[mode]
+        validate = False if mode == 'train' else True
+
         epoch = self.epoch
         running_loss = 0.0
 
@@ -62,10 +71,12 @@ class Trainer:
 
         epoch_loss = running_loss / len(dataloader)
         log_name = 'Training' if not validate else 'Validate'
+        output_imgs = self.inference(loader=dataloader)
 
         if self.writer:
             # log scaler to Tensorboard
             self.writer.add_scalar(f'{log_name} loss', epoch_loss, epoch)
+            self.writer.add_figure(log_name, visualize_torch(output_imgs), global_step=epoch)
 
         if validate:
             if self.patience > 0:
@@ -85,7 +96,7 @@ class Trainer:
 
     def evaluate_epoch(self):
         with torch.no_grad():
-            self.train_epoch(validate=True)
+            self.train_epoch(mode='valid')
 
     def train(self, n_epochs, logs_dir="", val_epoch=1):
         self.bad_epoch = 0
@@ -114,15 +125,15 @@ class Trainer:
         print(f'Total loss {total_loss/n_epochs}.')
         print('Finished Training')
 
-    def evaluate(self):
+    def test(self):
         with torch.no_grad():
-            return self.train_epoch(validate=True)
+            return self.train_epoch(mode='test')
 
     def inference(self, images=None, loader=None):
         if images is None:
             if loader is None:
                 try:
-                    loader = self.valid_loader
+                    loader = self.loader['valid']
                 except:
                     print('No Dataloader was specified')
             in_imgs, _ = next(iter(loader))
@@ -132,7 +143,8 @@ class Trainer:
         with torch.no_grad():
             self.model.eval()
             output = self.model(in_imgs)
-            _, pred = torch.max(output.data, 1)
+            F.softmax(output, dim=1)
+            pred = torch.argmax(output, dim=1)
             return pred
 
     def save(self, path, inference=True):
@@ -150,11 +162,12 @@ class Trainer:
             print('Checkpoint saved. ', path)
 
     def load(self, path, inference=True):
+        device = 'cuda' if self.cuda else 'cpu'
         if inference:
-            self.model.load_state_dict(torch.load(path))
+            self.model.load_state_dict(torch.load(path, map_location=torch.device(device))['model_state_dict'])
             print('Model loaded. ', path)
         else:
-            checkpoint = torch.load(path)
+            checkpoint = torch.load(path, map_location=torch.device(device))
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.criterion.load_state_dict(checkpoint['criterion_state_dict'])
