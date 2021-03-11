@@ -25,12 +25,15 @@ class ConvRelu(nn.Module):
 
 
 class StackedConv(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, padding, activ_fn=nn.ReLU):
+    def __init__(self, in_channels, out_channels, kernel_size, padding, middle_channel=None, activ_fn=nn.ReLU):
         super().__init__()
+
+        if not middle_channel:
+            middle_channel = out_channels
 
         self.model = nn.Sequential(
             ConvRelu(in_channels, out_channels, kernel_size, padding, activ_fn=activ_fn),
-            ConvRelu(out_channels, out_channels, kernel_size, padding, activ_fn=activ_fn),
+            ConvRelu(middle_channel, out_channels, kernel_size, padding, activ_fn=activ_fn),
         )
 
     def forward(self, x):
@@ -54,7 +57,7 @@ class DecoderBlock(nn.Module):
 
         # self.up = nn.ConvTranspose2d(input_channels, f_channels, kernel_size=2, padding=0, stride=2)
         self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.conv = StackedConv(input_channels, f_channels, f, padding, activ_fn=activ_fn)
+        self.conv = StackedConv(input_channels*2, f_channels, f, padding, middle_channel= input_channels ,activ_fn=activ_fn)
 
     def forward(self, x, x_pre):
         x_up = self.up(x)
@@ -89,7 +92,7 @@ class UNet(nn.Module):
         self.encoder2 = EncoderBlock(f_channels, f_channels * 2, f, padding, activ_fn=activ_fn)
         self.encoder3 = EncoderBlock(f_channels * 2, f_channels * 4, f, padding, activ_fn=activ_fn)
         self.encoder4 = EncoderBlock(f_channels * 4, f_channels * 8, f, padding, activ_fn=activ_fn)
-        self.encoder_out = StackedConv(f_channels * 8, f_channels * 16, f, padding, activ_fn=activ_fn)
+        self.encoder_out = StackedConv(f_channels * 8, f_channels * 16, f, padding, activ_fn=activ_fn) #1024x28x28
 
         # decoder
         self.decoder1 = DecoderBlock(f_channels * 16, f_channels * 8, f, padding, activ_fn=activ_fn)
