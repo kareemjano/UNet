@@ -57,7 +57,7 @@ class DecoderBlock(nn.Module):
 
         # self.up = nn.ConvTranspose2d(input_channels, f_channels, kernel_size=2, padding=0, stride=2)
         self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.conv1 = nn.Conv2d(in_channels=input_channels, out_channels=int(input_channels/2), kernel_size=f, padding=padding)
+        self.conv1 = nn.Conv2d(in_channels=input_channels, out_channels=int(input_channels/2), kernel_size=f, padding=1)
         self.conv = StackedConv(input_channels, f_channels, f, padding, activ_fn=activ_fn)
 
     def forward(self, x, x_pre):
