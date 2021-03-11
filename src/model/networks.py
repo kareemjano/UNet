@@ -1,5 +1,6 @@
 from torch import nn
 import torch
+import math
 
 class ConvRelu(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding, activ_fn = nn.ReLU):
@@ -12,8 +13,10 @@ class ConvRelu(nn.Module):
         )
 
         def weights_init(m):
-            if type(m) == nn.Conv2d:
-                nn.init.xavier_normal_(m.weight, gain=2.0)
+            if isinstance(m, nn.Conv2d):
+                # nn.init.xavier_normal_(m.weight, gain=2.0)
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
 
         self.model.apply(weights_init)
 

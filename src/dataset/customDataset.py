@@ -81,7 +81,7 @@ class CustomDataset(Dataset):
             label_map = f.readlines()
 
         # label_map = label_map[:int(len(label_map)/4)]
-        label_map = label_map[:16]
+        label_map = label_map[:5]
         self.labels_map = [x.strip() for x in label_map]
 
     def __len__(self):
