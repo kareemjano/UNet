@@ -62,7 +62,7 @@ class DecoderBlock(nn.Module):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
 
-        self.model.apply(weights_init)
+        self.conv1.apply(weights_init)
 
     def forward(self, x, x_pre):
         x_up = self.up(x)
