@@ -8,8 +8,8 @@ class ConvRelu(nn.Module):
 
         self.model = nn.Sequential(
             nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, padding=padding),
-            nn.BatchNorm2d(out_channels),
             activ_fn(),
+            nn.BatchNorm2d(out_channels),
         )
 
         def weights_init(m):
@@ -25,15 +25,12 @@ class ConvRelu(nn.Module):
 
 
 class StackedConv(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, padding, middle_channel=None, activ_fn=nn.ReLU):
+    def __init__(self, in_channels, out_channels, kernel_size, padding, activ_fn=nn.ReLU):
         super().__init__()
-
-        if not middle_channel:
-            middle_channel = out_channels
 
         self.model = nn.Sequential(
             ConvRelu(in_channels, out_channels, kernel_size, padding, activ_fn=activ_fn),
-            ConvRelu(middle_channel, out_channels, kernel_size, padding, activ_fn=activ_fn),
+            ConvRelu(out_channels, out_channels, kernel_size, padding, activ_fn=activ_fn),
         )
 
     def forward(self, x):
@@ -59,6 +56,13 @@ class DecoderBlock(nn.Module):
         self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
         self.conv1 = nn.Conv2d(in_channels=input_channels, out_channels=int(input_channels/2), kernel_size=f, padding=1)
         self.conv = StackedConv(input_channels, f_channels, f, padding, activ_fn=activ_fn)
+
+        def weights_init(m):
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+
+        self.model.apply(weights_init)
 
     def forward(self, x, x_pre):
         x_up = self.up(x)
