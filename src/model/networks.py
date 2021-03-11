@@ -57,18 +57,18 @@ class DecoderBlock(nn.Module):
 
         # self.up = nn.ConvTranspose2d(input_channels, f_channels, kernel_size=2, padding=0, stride=2)
         self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.conv = StackedConv(input_channels*2, f_channels, f, padding, middle_channel= input_channels ,activ_fn=activ_fn)
+        self.conv1 = nn.Conv2d(in_channels=input_channels, out_channels=int(input_channels/2), kernel_size=f, padding=padding)
+        self.conv = StackedConv(input_channels, f_channels, f, padding, activ_fn=activ_fn)
 
     def forward(self, x, x_pre):
         x_up = self.up(x)
+        x_up = self.conv1(x_up)
         dx = x_pre.shape[2] - x_up.shape[2]
         dy = x_pre.shape[3] - x_up.shape[3]
         startx, endx = int(dx / 2), -int(dx / 2)
         starty, endy = int(dy / 2), -int(dy / 2)
 
         x_pre_cropped = x_pre[:,:,startx:endx, starty:endy]
-        print(x_pre_cropped.shape)
-        print(x_up.shape)
         assert x_pre_cropped.shape == x_up.shape
 
         x_concat = torch.cat([x_up, x_pre_cropped], dim=1)
