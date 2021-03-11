@@ -132,6 +132,7 @@ class Trainer:
             return self.train_epoch(mode='test')
 
     def inference(self, images=None, loader=None):
+        seg_img = None
         if images is None:
             if loader is None:
                 try:
