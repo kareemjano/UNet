@@ -32,11 +32,11 @@ The best checkpoint is automatically saved in data/models/UNet
 ### GPU
 Automaticly detects GPU and uses it.
 
-## Current Results
-![training loss](figures/train_loss.jpg)
-
-
-![validation loss](figures/valid.jpg)
+## Inference
+```
+python infer.py -i test.jpg -c checkpoint.model
+```
+if checkpoint path is not given, the script will try to find the one stored in data/model/UNet/checkpoint.model
 
 ## Citation
 @misc{pascal-voc-2012,
