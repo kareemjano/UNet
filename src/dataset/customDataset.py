@@ -80,7 +80,7 @@ class CustomDataset(Dataset):
         with open(labels_map_path) as f:
             label_map = f.readlines()
 
-        label_map = label_map[:5]
+        label_map = label_map
         self.labels_map = [x.strip() for x in label_map]
 
     def __len__(self):

@@ -2,6 +2,7 @@ from torch import nn
 import torch
 import math
 
+
 class ConvRelu(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding, activ_fn = nn.ReLU):
         super().__init__()
@@ -23,7 +24,6 @@ class ConvRelu(nn.Module):
         return self.model(x)
 
 
-
 class StackedConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding, activ_fn=nn.ReLU):
         super().__init__()
@@ -35,6 +35,7 @@ class StackedConv(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
 
 class EncoderBlock(nn.Module):
     def __init__(self, input_channels, f_channels, f, padding, activ_fn=nn.ReLU):
@@ -48,13 +49,29 @@ class EncoderBlock(nn.Module):
         x_down = self.pool(x)
         return x_down, x
 
+
+class UpBlock(nn.Module):
+    def __init__(self, input_channels, f):
+        super().__init__()
+
+        self.model = nn.Sequential(
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+            nn.Conv2d(in_channels=input_channels, out_channels=int(input_channels/2), kernel_size=f, padding=1),
+        )
+
+        def weights_init(m):
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+
+        self.model.apply(weights_init)
+
+
 class DecoderBlock(nn.Module):
     def __init__(self, input_channels, f_channels, f, padding, activ_fn=nn.ReLU):
         super().__init__()
 
-        # self.up = nn.ConvTranspose2d(input_channels, f_channels, kernel_size=2, padding=0, stride=2)
-        self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.conv1 = nn.Conv2d(in_channels=input_channels, out_channels=int(input_channels/2), kernel_size=f, padding=1)
+        self.up = UpBlock(input_channels, f)
         self.conv = StackedConv(input_channels, f_channels, f, padding, activ_fn=activ_fn)
 
         def weights_init(m):
@@ -66,7 +83,6 @@ class DecoderBlock(nn.Module):
 
     def forward(self, x, x_pre):
         x_up = self.up(x)
-        x_up = self.conv1(x_up)
         dx = x_pre.shape[2] - x_up.shape[2]
         dy = x_pre.shape[3] - x_up.shape[3]
         startx, endx = int(dx / 2), -int(dx / 2)
