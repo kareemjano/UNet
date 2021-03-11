@@ -14,7 +14,6 @@ class ConvRelu(nn.Module):
 
         def weights_init(m):
             if isinstance(m, nn.Conv2d):
-                # nn.init.xavier_normal_(m.weight, gain=2.0)
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
 
