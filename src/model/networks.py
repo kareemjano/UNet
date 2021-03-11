@@ -67,6 +67,8 @@ class DecoderBlock(nn.Module):
         starty, endy = int(dy / 2), -int(dy / 2)
 
         x_pre_cropped = x_pre[:,:,startx:endx, starty:endy]
+        print(x_pre_cropped.shape)
+        print(x_up.shape)
         assert x_pre_cropped.shape == x_up.shape
 
         x_concat = torch.cat([x_up, x_pre_cropped], dim=1)
