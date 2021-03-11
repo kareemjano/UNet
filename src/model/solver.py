@@ -71,12 +71,13 @@ class Trainer:
 
         epoch_loss = running_loss / len(dataloader)
         log_name = 'Training' if not validate else 'Validate'
-        output_imgs = self.inference(loader=dataloader).detach().cpu()
+        output_imgs, seg_img = self.inference(loader=dataloader).detach().cpu()
 
         if self.writer:
             # log scaler to Tensorboard
             self.writer.add_scalar(f'{log_name} loss', epoch_loss, epoch)
             self.writer.add_figure(log_name, visualize_torch(output_imgs), global_step=epoch)
+            self.writer.add_figure(log_name, visualize_torch(seg_img), global_step=epoch)
 
         if validate:
             if self.patience > 0:
@@ -136,7 +137,7 @@ class Trainer:
                     loader = self.loader['valid']
                 except:
                     print('No Dataloader was specified')
-            in_imgs, _ = next(iter(loader))
+            in_imgs, seg_img = next(iter(loader))
         else:
             in_imgs = images
 
@@ -145,7 +146,7 @@ class Trainer:
             output = self.model(in_imgs)
             F.softmax(output, dim=1)
             pred = torch.argmax(output, dim=1)
-            return pred
+            return pred, seg_img
 
     def save(self, path, inference=True):
         if inference:

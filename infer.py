@@ -37,7 +37,7 @@ def run(parser):
         print("Checkpoint path doesn't exist")
 
     #perfom inference and save image
-    out = trainer.inference(images=image)
+    out, _ = trainer.inference(images=image)
     out_image = decode_segmap(out.squeeze(0))
     print(np.unique(out_image))
 
