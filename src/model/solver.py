@@ -78,7 +78,7 @@ class Trainer:
             # log scaler to Tensorboard
             self.writer.add_scalar(f'{log_name} loss', epoch_loss, epoch)
             self.writer.add_figure(log_name, visualize_torch(output_imgs), global_step=epoch)
-            self.writer.add_figure(log_name+'gt', visualize_torch(seg_img), global_step=epoch)
+            self.writer.add_figure(log_name+' gt', visualize_torch(seg_img), global_step=epoch)
 
         if validate:
             if self.patience > 0:
