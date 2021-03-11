@@ -66,6 +66,9 @@ class UpBlock(nn.Module):
 
         self.model.apply(weights_init)
 
+    def forward(self, x):
+        return self.model(x)
+
 
 class DecoderBlock(nn.Module):
     def __init__(self, input_channels, f_channels, f, padding, activ_fn=nn.ReLU):
